@@ -1,0 +1,17 @@
+{
+  "name": "pharmabot-whatsapp-bridge",
+  "version": "1.0.0",
+  "description": "PharmaBot WhatsApp-Dialogflow bridge",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google-cloud/dialogflow": "^7.3.0",
+    "body-parser": "^2.2.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
+    "twilio": "^5.10.4"
+  }
+}

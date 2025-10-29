@@ -1,0 +1,6 @@
+# Ignore sensitive files
+dialogflow-key.json
+.env 
+node_modules/
+dialogflow-key.json
+.env
