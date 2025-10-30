@@ -45,43 +45,35 @@ if (process.env.DF_SERVICE_ACCOUNT_JSON) {
   sessionClient = new dialogflow.SessionsClient({ keyFilename: keyPath });
   console.log('✅ Dialogflow: using local key file');
 }
-app.post("/webhook", async (req, res) => {
-  console.log("Incoming webhook:",req.body); //
+const twilio = require("twilio");
+const TW_CLIENT = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+app.post("/webhook", express.urlencoded({ extended: false }), async (req, res) => {
   try {
-    const message = req.body.Body || "";
-    const sessionPath = sessionClient.projectAgentSessionPath(PROJECT_ID,"12345");
+    console.log("📩 Incoming webhook payload:", req.body);
 
-    const request = {
-      session: sessionPath,
-      queryInput: {
-        text: {
-          text: message,
-          languageCode: "en",
-        },
-      },
-    };
+    const from = req.body.From;
+    const to = process.env.TWILIO_WHATSAPP_NUMBER;
+    const userMessage = req.body.Body || "";
 
-    const responses = await sessionClient.detectIntent(request);
-    const result = responses[0].queryResult;
-    const reply =
-      result && result.fulfillmentText
-        ? result.fulfillmentText 
-        : "Sorry, I didn’t understand that.";
-const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const twiml = new MessagingResponse();
-twiml.message(reply);
+    if (!from) throw new Error("❌ 'From' number missing in webhook");
 
-res.type('text/xml');
-res.send(twiml.toString());
-    
+    const reply = 💊 PharmaBot test reply → You said: "${userMessage}";
+
+    console.log("📤 Sending reply:", reply);
+
+    await TW_CLIENT.messages.create({
+      from: to,
+      to: from,
+      body: reply,
+    });
+
+    res.status(200).send("<Response><Message>Processed successfully</Message></Response>");
   } catch (err) {
-    console.error("Dialogflow error:", err);
-    res.set("Content-Type", "text/xml");
-    res.send(
-      `<Response><Message>⚠ Error communicating with PharmaBot.</Message></Response>`
-    );
+    console.error("❌ Webhook Error:", err);
+    res.status(500).send("<Response><Message>Error processing message.</Message></Response>");
   }
-});
+  });
 
 app.get("/", (req, res) => res.send("PharmaBot bridge is running."));
 
