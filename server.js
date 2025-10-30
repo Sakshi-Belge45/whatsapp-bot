@@ -58,9 +58,8 @@ app.post("/webhook", express.urlencoded({ extended: false }), async (req, res) =
 
     if (!from) throw new Error("❌ 'From' number missing in webhook");
 
-    const reply = 💊 PharmaBot test reply → You said: "${userMessage}";
+    const reply = 💊 PharmaBot test reply → You said: ${userMessage};
 
-    console.log("📤 Sending reply:", reply);
 
     await TW_CLIENT.messages.create({
       from: to,
