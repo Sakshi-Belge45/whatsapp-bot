@@ -86,15 +86,14 @@ const botReply = result.fulfillmentText && result.fulfillmentText.trim()
 console.log("🤖 Dialogflow response:", botReply);
 
 // --- send Dialogflow reply back via Twilio ---
-// --- send Dialogflow reply back via Twilio ---
 await TW_CLIENT.messages.create({
-  from: to,     // your Twilio WhatsApp number
-  to: from,     // user's WhatsApp number
+  from: to,   // your Twilio WhatsApp number
+  to: from,   // user's WhatsApp number
   body: botReply,
 });
 
-// reply OK to Twilio (no TwiML message)
-res.sendStatus(200);
+// acknowledge Twilio webhook with an empty 200 (no body)
+res.status(200).end();
 } catch (err) {
   console.error("❌ Webhook Error:", err);
   res.status(500).send("<Response><Message>Error processing message.</Message></Response>");
