@@ -76,18 +76,24 @@ app.post("/webhook", express.urlencoded({ extended: false }), async (req, res) =
         },
       },
     };
+// --- ask Dialogflow for an intent detection result ---
+const responses = await sessionClient.detectIntent(request);
+const result = responses[0].queryResult;
+const botReply = result.fulfillmentText && result.fulfillmentText.trim()
+  ? result.fulfillmentText
+  : "Sorry, I didn't understand that.";
 
-    // ---- Send user message to Dialogflow ----
-    const responses = await sessionClient.detectIntent(request);
-    const result = responses[0].queryResult;
-    const botReply = result.fulfillmentText || "Sorry, I didn’t get that.";
+console.log("🤖 Dialogflow response:", botReply);
 
-    // ---- Send Dialogflow's reply back to WhatsApp ----
-    await TW_CLIENT.messages.create({
-      from: to,
-      to: from,
-      body: botReply,
-    });
+// --- send Dialogflow reply back via Twilio ---
+await TW_CLIENT.messages.create({
+  from: to,    // your Twilio WhatsApp number
+  to: from,    // user's WhatsApp number
+  body: botReply,
+});
+
+// acknowledge Twilio webhook request
+res.status(200).send("<Response><Message>Processed successfully</Message></Response>");
 
     res.status(200).send("<Response><Message>Processed successfully</Message></Response>");
   } catch (err) {
