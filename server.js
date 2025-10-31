@@ -58,23 +58,44 @@ app.post("/webhook", express.urlencoded({ extended: false }), async (req, res) =
 
     if (!from) throw new Error("❌ 'From' number missing in webhook");
 
-    const reply = `💊 PharmaBot test reply → You said: ${userMessage}`;
+    // ---- Dialogflow session setup ----
+    const sessionClient = new dialogflow.SessionsClient({
+      keyFilename: keyPath,
+    });
+    const sessionPath = sessionClient.projectAgentSessionPath(
+      process.env.DIALOGFLOW_PROJECT_ID,
+      "unique-session-id"
+    );
 
+    const request = {
+      session: sessionPath,
+      queryInput: {
+        text: {
+          text: userMessage,
+          languageCode: "en",
+        },
+      },
+    };
 
+    // ---- Send user message to Dialogflow ----
+    const responses = await sessionClient.detectIntent(request);
+    const result = responses[0].queryResult;
+    const botReply = result.fulfillmentText || "Sorry, I didn’t get that.";
+
+    // ---- Send Dialogflow's reply back to WhatsApp ----
     await TW_CLIENT.messages.create({
       from: to,
       to: from,
-      body: reply,
+      body: botReply,
     });
 
     res.status(200).send("<Response><Message>Processed successfully</Message></Response>");
   } catch (err) {
     console.error("❌ Webhook Error:", err);
     res.status(500).send("<Response><Message>Error processing message.</Message></Response>");
-  }
-  });
-
+  }
+});
 app.get("/", (req, res) => res.send("PharmaBot bridge is running."));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ PharmaBot running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ PharmaBot running on port${PORT}`));
