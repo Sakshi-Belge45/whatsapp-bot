@@ -86,21 +86,21 @@ const botReply = result.fulfillmentText && result.fulfillmentText.trim()
 console.log("🤖 Dialogflow response:", botReply);
 
 // --- send Dialogflow reply back via Twilio ---
+// --- send Dialogflow reply back via Twilio ---
 await TW_CLIENT.messages.create({
-  from: to,    // your Twilio WhatsApp number
-  to: from,    // user's WhatsApp number
+  from: to,     // your Twilio WhatsApp number
+  to: from,     // user's WhatsApp number
   body: botReply,
 });
 
-// acknowledge Twilio webhook request
-res.status(200).send("<Response><Message>Processed successfully</Message></Response>");
-
-    res.status(200).send("<Response><Message>Processed successfully</Message></Response>");
-  } catch (err) {
-    console.error("❌ Webhook Error:", err);
-    res.status(500).send("<Response><Message>Error processing message.</Message></Response>");
-  }
+// reply OK to Twilio (no TwiML message)
+res.sendStatus(200);
+} catch (err) {
+  console.error("❌ Webhook Error:", err);
+  res.status(500).send("<Response><Message>Error processing message.</Message></Response>");
+}
 });
+
 app.get("/", (req, res) => res.send("PharmaBot bridge is running."));
 
 const PORT = process.env.PORT || 3000;
